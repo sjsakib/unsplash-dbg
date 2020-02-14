@@ -14,6 +14,7 @@ from os import system
 from datetime import datetime
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.makedirs('images', exist_ok=True)
 
 # Create an app here: https://unsplash.com/oauth/applications
 # and collect your client_id
@@ -29,10 +30,17 @@ res = unsplash('/photos/random', featured=True, orientation='landscape')
 
 img = res.json()
 
-url = img['urls']['regular']
+url = img['urls']['full']
+
+file_path = os.path.join('images', img['id'] + '.jpg')
+with open(file_path, 'wb') as f:
+    f.write(requests.get(url).content)
 
 with open('log.txt', 'a') as f:
-    print(
-        f"{datetime.now().strftime('%d %b %Y %H:%M')}\n{img['description']}\n{img['location']['name']}\n{img['links']['html']}\n", file=f)
+    print(f"{datetime.now().strftime('%d %b %Y %H:%M')}", file=f)
+    print(f"{img['description']}", file=f)
+    print(f"{img['location']['name']}", file=f)
+    print(f"{img['links']['html']}\n", file=f)
 
-system(f'gsettings set org.gnome.desktop.background picture-uri {url}')
+abs_path = os.path.abspath(file_path)
+system(f'gsettings set org.gnome.desktop.background picture-uri {abs_path}')
